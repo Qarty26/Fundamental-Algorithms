@@ -6,51 +6,13 @@ using namespace std;
 
 class Graph
 {
-    int i,j;
     vector<vector<int>> connect;
     vector<int> nivel;
     vector<int> nivel_min;
     vector<int> viz;
-    vector<vector<int>> rez;
     vector<int> safe;
-    vector<int> sol;
-    vector<vector<int>> grid_copy;
     queue<vector<int>> coada;
 
-    void Dfs(int node) //helping method for critical connections
-    {
-        viz[node] = 1;
-        nivel_min[node] = nivel[node];
-        for(int i=0;i<connect[node].size();i++)
-        {
-            int vecin=connect[node][i];
-            if(viz[vecin]==0)
-            {
-                nivel[vecin] = nivel[node]+1;
-                Dfs(vecin);
-                nivel_min[node] = nivel_min[node] < nivel_min[vecin] ? nivel_min[node] : nivel_min[vecin];
-                if(nivel_min[vecin]>nivel[node]) rez.push_back({vecin,node});
-            }
-            else
-                if(nivel[vecin] < nivel[node]-1)
-                    nivel_min[node] = nivel_min[node] < nivel[vecin] ? nivel_min[node] : nivel[vecin];
-
-        }
-    }
-
-    int dfs(int node) //returns 0 if the node is not safe, 1 if it is safe
-    {
-        if(safe[node]!=-1)
-            return safe[node];
-
-        safe[node] = 0;
-        for(int j=0;j<connect[node].size();j++)
-            if(dfs(connect[node][j])==0)
-                return safe[node];
-
-        safe[node] = 1;
-        return safe[node];
-    }
 
     void st_land(int &x, int &y) //finding the first patch of island, helping function for shortest bridge
     {
@@ -136,8 +98,55 @@ class Graph
         }
     }
 
-    int BfsSearch() //searching by layers to find the 2nd island, helping function for shortest bridge
+
+public:
+
+    void Dfs(int node) //helping method for critical connections
     {
+        viz[node] = 1;
+        nivel_min[node] = nivel[node];
+        for(int i=0;i<connect[node].size();i++)
+        {
+            int vecin=connect[node][i];
+            if(viz[vecin]==0)
+            {
+                nivel[vecin] = nivel[node]+1;
+                Dfs(vecin);
+                nivel_min[node] = nivel_min[node] < nivel_min[vecin] ? nivel_min[node] : nivel_min[vecin];
+                if(nivel_min[vecin]>nivel[node]) rez.push_back({vecin,node});
+            }
+            else
+                if(nivel[vecin] < nivel[node]-1)
+                    nivel_min[node] = nivel_min[node] < nivel[vecin] ? nivel_min[node] : nivel[vecin];
+
+        }
+    }
+
+    int dfs(int node) //returns 0 if the node is not safe, 1 if it is safe
+    {
+        if(safe[node]!=-1)
+            return safe[node];
+
+        safe[node] = 0;
+        for(int j=0;j<connect[node].size();j++)
+            if(dfs(connect[node][j])==0)
+                return safe[node];
+
+        safe[node] = 1;
+        return safe[node];
+    }
+
+    int BfsSearch(vector<vector<int>> grid) //searching by layers to find the 2nd island, helping function for shortest bridge
+    {
+
+        int x,y,n;
+        vector<vector<int>> grid_copy;
+        grid_copy=grid;
+        n=grid_copy.size();
+        st_land(x,y);
+        filling(x,y);
+        bordering();
+
         while(!coada.empty())
         {
             if(0<=coada.front()[0]-1 && coada.front()[0]-1<grid_copy.size() && grid_copy[coada.front()[0]-1][coada.front()[1]]==0)
@@ -180,6 +189,27 @@ class Graph
 
         return 0;
     }
+
+    Graph()
+    {
+
+    }
+
+
+
+};
+
+class Solution
+{
+    int i,j;
+    vector<vector<int>> connect;
+    vector<int> nivel;
+    vector<int> nivel_min;
+    vector<int> viz;
+    vector<vector<int>> rez;
+    vector<int> safe;
+    vector<int> sol;
+    queue<vector<int>> coada;
 
 public:
 
@@ -244,7 +274,7 @@ public:
         return true;
     }
 
-    vector<int> topologicalSort(int numCourses, vector<vector<int>>& prerequisites)
+    vector<int> findOrder(int numCourses, vector<vector<int>>& prerequisites)
     {
 
         int degr[numCourses+1];
@@ -296,6 +326,7 @@ public:
 
     vector<vector<int>> criticalConnections(int n, vector<vector<int>>& connections)
     {
+        Graph g;
         connect.clear();
         for(i=0;i<n;i++) //initialing
         {
@@ -311,7 +342,7 @@ public:
             connect[connections[i][1]].push_back(connections[i][0]);
         }
 
-        Dfs(0);
+        g.Dfs(0);
 
         return rez;
 
@@ -319,14 +350,14 @@ public:
 
     vector<int> eventualSafeNodes(vector<vector<int>>& graph)
     {
-
+            Graph g;
             connect = graph;
 
             for(int i=0;i<graph.size();i++)
                 safe.push_back(-1);
 
             for(int i=0;i<graph.size();i++)
-                if(dfs(i)==1)
+                if(g.dfs(i)==1)
                     sol.push_back(i);
 
             return sol;
@@ -334,14 +365,8 @@ public:
 
     int shortestBridge(vector<vector<int>>& grid)
     {
-
-        int x,y,n;
-        grid_copy=grid;
-        n=grid_copy.size();
-        st_land(x,y);
-        filling(x,y);
-        bordering();
-        return BfsSearch();
+        Graph g;
+        return g.BfsSearch(grid);
 
         return 0;
     }
@@ -350,6 +375,10 @@ public:
 
 int main()
 {
+
+    Solution s;
+    vector<vector<int>> grid = {{1,1,1,1,1},{1,0,0,0,1},{1,0,0,0,1},{1,0,0,0,1},{0,0,1,0,0}};
+    cout<<s.shortestBridge(grid);
 
     return 0;
 }
