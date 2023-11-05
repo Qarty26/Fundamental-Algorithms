@@ -4,9 +4,12 @@
 #include <cstring>
 
 using namespace std;
-
+///------------------------------------------------------GRAPH---------------------------------------------------------------------------------------------
 class Graph
 {
+    vector<vector<int>> edgeList;
+    int noNodes;
+    bool directed;
 
     void st_land(int &x, int &y,vector<vector<int>>& grid_copy) //finding the first patch of island, helping function for shortest bridge
     {
@@ -135,6 +138,7 @@ class Graph
             coada.pop();
 
         }
+        return 0;
     }
 
     void Dfs(int node,vector<vector<int>>& connect,vector<int> &nivel,vector<int> &nivel_min,vector<int> &viz,vector<vector<int>> &rez) //helping method for critical connections
@@ -158,37 +162,48 @@ class Graph
         }
     }
 public:
-
-    vector<vector<int>> findCriticalConections(int n, vector<vector<int>>& connections)
+    ///---------------------------------------CONSTRUCTOR-------------------------------------------------------------
+    Graph(int noNodes, bool directed, vector<vector<int>>& edges)
     {
-        vector<int> nivel(n,0);
-        vector<int> nivel_min(n,0);
-        vector<int> viz(n,0);
-        vector<vector<int>> rez;
-        vector<vector<int>> connect;
-
-        for(int i=0;i<n;i++)
-            connect.push_back({});
-
-        for(int i=0;i<connections.size();i++) //rearranging the data
+        this->directed = directed;
+        this->noNodes = noNodes;
+        edgeList.resize(noNodes+1);
+        for(int i=0;i<edges.size();i++)
         {
-            connect[connections[i][0]].push_back(connections[i][1]);
-            connect[connections[i][1]].push_back(connections[i][0]);
+            edgeList[edges[i][0]].push_back(edges[i][1]);
+            if(directed == false)
+                edgeList[edges[i][1]].push_back(edges[i][0]);
         }
+    }
 
-        Dfs(0,connect,nivel,nivel_min,viz,rez);
+    Graph(bool directed, vector<vector<int>>& edges)
+    {
+        this->directed = directed;
+        edgeList = edges;
+    }
+
+    Graph() {   }
+
+
+    ///----------------------------------------END CONSTRUCTOR--------------------------------------------------------------
+    vector<vector<int>> findCriticalConections()
+    {
+        vector<int> nivel(noNodes,0),nivel_min(noNodes,0),viz(noNodes,0);
+        vector<vector<int>> rez;
+
+        Dfs(0,edgeList,nivel,nivel_min,viz,rez);
 
         return rez;
     }
 
-    int dfs(int node, vector<vector<int>>& connect, vector<int>& safe) //returns 0 if the node is not safe, 1 if it is safe
+    int dfs(int node, vector<int>& safe) //returns 0 if the node is not safe, 1 if it is safe
     {
         if(safe[node]!=-1)
             return safe[node];
 
         safe[node] = 0;
-        for(int j=0;j<connect[node].size();j++)
-            if(dfs(connect[node][j],connect,safe)==0)
+        for(int j=0;j<edgeList[node].size();j++)
+            if(dfs(edgeList[node][j],safe)==0)
                 return safe[node];
 
         safe[node] = 1;
@@ -209,26 +224,26 @@ public:
         return 0;
     }
 
-    bool isBipartite(int n, vector<vector<int>>& connect)
+    bool isBipartite()
     {
         queue<int> coada;
-        vector<int> culori (n+1,0);
-        int m=n;
+        vector<int> culori (noNodes+1,0);
+        int m=noNodes;
 
-        coada.push(connect[1][0]);
+        coada.push(edgeList[1][0]);
         culori[coada.front()]=1;
 
         while(m>0)
         {
             int head = coada.front();
-            for(int i=0;i<connect[head].size();i++)
+            for(int i=0;i<edgeList[head].size();i++)
             {
-                if(culori[connect[head][i]] == 0)
+                if(culori[edgeList[head][i]] == 0)
                 {
-                    coada.push(connect[head][i]);
-                    culori[connect[head][i]] = 3 - culori[head];
+                    coada.push(edgeList[head][i]);
+                    culori[edgeList[head][i]] = 3 - culori[head];
                 }
-                else if(culori[head] == culori[connect[head][i]])
+                else if(culori[head] == culori[edgeList[head][i]])
                     return false;
 
             }
@@ -236,7 +251,7 @@ public:
             m--;
 
             if(coada.empty() && m!=0)
-                for(int j=1;j<=n;j++)
+                for(int j=1;j<=noNodes;j++)
                     if(culori[j]==0)
                     {
                        coada.push(j);
@@ -247,24 +262,24 @@ public:
         return true;
     }
 
-    vector<int> whichBipartite(int n, vector<vector<int>>& connect)
+    vector<int> whichBipartite()
     {
         queue<int> coada;
-        vector<int> culori (n+1,0);
-        int m=n;
+        vector<int> culori (noNodes+1,0);
+        int m=noNodes;
 
-        coada.push(connect[1][0]);
+        coada.push(edgeList[1][0]);
         culori[coada.front()]=1;
 
         while(m>0)
         {
             int head = coada.front();
-            for(int i=0;i<connect[head].size();i++)
+            for(int i=0;i<edgeList[head].size();i++)
             {
-                if(culori[connect[head][i]] == 0)
+                if(culori[edgeList[head][i]] == 0)
                 {
-                    coada.push(connect[head][i]);
-                    culori[connect[head][i]] = 3 - culori[head];
+                    coada.push(edgeList[head][i]);
+                    culori[edgeList[head][i]] = 3 - culori[head];
                 }
 
             }
@@ -272,7 +287,7 @@ public:
             m--;
 
             if(coada.empty() && m!=0)
-                for(int j=1;j<=n;j++)
+                for(int j=1;j<=noNodes;j++)
                     if(culori[j]==0)
                     {
                        coada.push(j);
@@ -301,38 +316,21 @@ public:
         return parent;
     }
 
-    Graph()
-    {
-
-    }
-
-
-
 };
 
+
+///------------------------------------------------------------SOLUTION----------------------------------------------------------------------------------
 class Solution
 {
 
-    queue<vector<int>> coada;
 
 public:
 
     bool possibleBipartition(int n, vector<vector<int>>& dislikes)
     {
-        int i;
-        Graph g;
-        vector<vector<int>> connect;
-
-        for(i=0;i<=n;i++)
-            connect.push_back({});
-        for(i=0;i<dislikes.size();i++)
-        {
-            connect[dislikes[i][0]].push_back(dislikes[i][1]);
-            connect[dislikes[i][1]].push_back(dislikes[i][0]);
-        }
-
+        Graph g(n,false,dislikes);
         if(n>1)
-            return g.isBipartite(n,connect);
+            return g.isBipartite();
 
         return true;
     }
@@ -389,23 +387,21 @@ public:
 
     vector<vector<int>> criticalConnections(int n, vector<vector<int>>& connections)
     {
-        Graph g;
-        return g.findCriticalConections(n,connections);
+        Graph g(n,false,connections);
+        return g.findCriticalConections();
 
     }
 
     vector<int> eventualSafeNodes(vector<vector<int>>& graph)
     {
-            Graph g;
-            vector<vector<int>> connect;
+            Graph g(true,graph);
             vector<int> safe,sol;
 
-            connect = graph;
             for(int i=0;i<graph.size();i++)
                 safe.push_back(-1);
 
             for(int i=0;i<graph.size();i++)
-                if(g.dfs(i,connect,safe)==1)
+                if(g.dfs(i,safe)==1)
                     sol.push_back(i);
 
             return sol;
@@ -451,24 +447,16 @@ public:
 
     string noLongPaths(int n, vector<vector<int>>& connections)
     {
-        Graph g;
-        vector<vector<int>> connect;
+        Graph g(n,false,connections);
         vector<int> colors(n+1);
         string result = "";
 
-        for(int i=0;i<=n;i++)
-            connect.push_back({});
-        for(int i=0;i<connections.size();i++)
-        {
-            connect[connections[i][0]].push_back(connections[i][1]);
-            connect[connections[i][1]].push_back(connections[i][0]);
-        }
 
-        if(g.isBipartite(n,connect) == false)
+        if(g.isBipartite() == false)
             return "NO";
         else
         {
-            colors = g.whichBipartite(n,connect);
+            colors = g.whichBipartite();
             for(int i=0;i<connections.size();i++)
                 if(colors[connections[i][0]]==1 && colors[connections[i][1]]==2)
                     result += "1";
@@ -560,7 +548,5 @@ public:
 
 int main()
 {
-
-
     return 0;
 }
