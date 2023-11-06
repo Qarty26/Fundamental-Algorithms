@@ -97,7 +97,7 @@ class Graph
         return coada;
     }
 
-    int searching(queue<vector<int>> coada,vector<vector<int>> grid_copy)
+    int searching(queue<vector<int>> coada,vector<vector<int>> grid_copy) //bfs search, layer by layer, and returns the minimum distance from an island to another(the number of layers needed)
     {
         while(!coada.empty())
         {
@@ -184,7 +184,6 @@ public:
 
     Graph() {   }
 
-
     ///----------------------------------------END CONSTRUCTOR--------------------------------------------------------------
     vector<vector<int>> findCriticalConections()
     {
@@ -224,7 +223,7 @@ public:
         return 0;
     }
 
-    bool isBipartite()
+    bool isBipartite() //check if a graph is bipartite
     {
         queue<int> coada;
         vector<int> culori (noNodes+1,0);
@@ -262,7 +261,7 @@ public:
         return true;
     }
 
-    vector<int> whichBipartite()
+    vector<int> whichBipartite() // (!!! only to be called if the graph is bipartite!!!) returns a vector. Each position is the node number and the value is the color that was given to the node
     {
         queue<int> coada;
         vector<int> culori (noNodes+1,0);
@@ -298,7 +297,7 @@ public:
         return culori;
     }
 
-    int doFind(int x, vector<int> &parent)
+    int doFind(int x, vector<int> &parent) //find method for union find problem
     {
         while(parent[x]!=x)
             x = doFind(parent[x],parent);
@@ -306,7 +305,7 @@ public:
         return x;
     }
 
-    vector<int> doUnion(int a, int b,vector<int>& parent)
+    vector<int> doUnion(int a, int b,vector<int>& parent) //union method for union find problem
     {
         int ua = doFind(a,parent);
         int ub = doFind(b,parent);
@@ -326,6 +325,14 @@ class Solution
 
 public:
 
+    bool in_graph(int x, int y, int n, int m) //checks if an element of coordinates (x,y) is in the interior of the matrix
+    {
+        if(0<=x && x<n && 0<=y && y<m)
+            return true;
+
+        return false;
+    }
+
     bool possibleBipartition(int n, vector<vector<int>>& dislikes)
     {
         Graph g(n,false,dislikes);
@@ -335,7 +342,7 @@ public:
         return true;
     }
 
-    vector<int> findOrder(int numCourses, vector<vector<int>>& prerequisites)
+    vector<int> findOrder(int numCourses, vector<vector<int>>& prerequisites) //done with topological sort
     {
 
         int degr[numCourses+1];
@@ -458,10 +465,10 @@ public:
         {
             colors = g.whichBipartite();
             for(int i=0;i<connections.size();i++)
-                if(colors[connections[i][0]]==1 && colors[connections[i][1]]==2)
-                    result += "1";
+                if(colors[connections[i][0]]==1 && colors[connections[i][1]]==2) //only need to be different, colors[connections[i][0]]==2 && colors[connections[i][1]]==1 also works
+                    result += "1"; //same here
                 else
-                    result += "0";
+                    result += "0"; //and here
 
             return("YES\n" + result);
         }
@@ -544,6 +551,46 @@ public:
 
     }
 
+    int padure(int n,int m, int pl,int pc, int cl, int cc,vector<vector<int>>& graph)
+    {
+
+        vector<vector<int>> cost(n, vector<int>(m,32000));
+        deque<pair<int,int>> deq;
+        vector<pair<int,int>> coordinates = {{-1,0},{1,0},{0,-1}, {0,1}};
+        deq.push_front({pl-1,pc-1});
+        cost[pl-1][pc-1] = 0;
+        while(!deq.empty())
+        {
+            int x=deq.front().first;
+            int y=deq.front().second;
+            deq.pop_front();
+
+            for(int i=0;i<coordinates.size();i++)
+            {
+                int x_new = x + coordinates[i].first;
+                int y_new = y + coordinates[i].second;
+
+                if(in_graph(x_new,y_new,n,m) && cost[x_new][y_new] > cost[x][y])
+                {
+                    if(graph[x_new][y_new] != graph[x][y])
+                    {
+                        cost[x_new][y_new] = cost[x][y] + 1;
+                        deq.push_back({x_new,y_new});
+                    }
+                    else
+                    {
+                        cost[x_new][y_new] = cost[x][y];
+                        deq.push_front({x_new,y_new});
+                    }
+                }
+            }
+
+
+
+        }
+
+        return cost[cl-1][cc-1];
+    }
 };
 
 int main()
