@@ -11,11 +11,11 @@ class Graph
     int noNodes;
     bool directed;
 
-    void st_land(int &x, int &y,vector<vector<int>>& grid_copy) //finding the first patch of island, helping function for shortest bridge
+    void st_land(int &x, int &y,vector<vector<int>>& grid) //finding the first patch of island, helping function for shortest bridge
     {
-        for(int i=0;i<grid_copy.size();i++)
-            for(int j=0;j<grid_copy[i].size();j++)
-                if(grid_copy[i][j]==1)
+        for(int i=0;i<grid.size();i++)
+            for(int j=0;j<grid[i].size();j++)
+                if(grid[i][j]==1)
                 {
                     x=i;
                     y=j;
@@ -23,29 +23,29 @@ class Graph
                 }
     }
 
-    void filling(int x, int y,vector<vector<int>>& grid_copy) //marking the first island, helping function for shortest bridge
+    void filling(int x, int y,vector<vector<int>>& grid) //marking the first island, helping function for shortest bridge
     {
-        grid_copy[x][y]=2;
+        grid[x][y]=2;
 
-        if(0<=x-1 && x-1<grid_copy.size())
+        if(0<=x-1 && x-1<grid.size())
         {
-            if(grid_copy[x-1][y]==1)
-                filling(x-1,y,grid_copy);
+            if(grid[x-1][y]==1)
+                filling(x-1,y,grid);
         }
-        if(0<=x+1 && x+1<grid_copy.size())
+        if(0<=x+1 && x+1<grid.size())
         {
-            if(grid_copy[x+1][y]==1)
-                filling(x+1,y,grid_copy);
+            if(grid[x+1][y]==1)
+                filling(x+1,y,grid);
         }
-        if(0<=y-1 && y-1<grid_copy.size())
+        if(0<=y-1 && y-1<grid.size())
         {
-            if(grid_copy[x][y-1]==1)
-                filling(x,y-1,grid_copy);
+            if(grid[x][y-1]==1)
+                filling(x,y-1,grid);
         }
-        if(0<=y+1 && y+1<grid_copy.size())
+        if(0<=y+1 && y+1<grid.size())
         {
-            if(grid_copy[x][y+1]==1)
-                filling(x,y+1,grid_copy);
+            if(grid[x][y+1]==1)
+                filling(x,y+1,grid);
         }
     }
 
@@ -163,6 +163,7 @@ class Graph
     }
 public:
     ///---------------------------------------CONSTRUCTOR-------------------------------------------------------------
+
     Graph(int noNodes, bool directed, vector<vector<int>>& edges)
     {
         this->directed = directed;
@@ -185,6 +186,7 @@ public:
     Graph() {   }
 
     ///----------------------------------------END CONSTRUCTOR--------------------------------------------------------------
+
     vector<vector<int>> findCriticalConections()
     {
         vector<int> nivel(noNodes,0),nivel_min(noNodes,0),viz(noNodes,0);
@@ -297,6 +299,13 @@ public:
         return culori;
     }
 
+
+};
+
+
+///------------------------------------------------------------SOLUTION----------------------------------------------------------------------------------
+class Solution
+{
     int doFind(int x, vector<int> &parent) //find method for union find problem
     {
         while(parent[x]!=x)
@@ -315,16 +324,6 @@ public:
         return parent;
     }
 
-};
-
-
-///------------------------------------------------------------SOLUTION----------------------------------------------------------------------------------
-class Solution
-{
-
-
-public:
-
     bool in_graph(int x, int y, int n, int m) //checks if an element of coordinates (x,y) is in the interior of the matrix
     {
         if(0<=x && x<n && 0<=y && y<m)
@@ -332,6 +331,8 @@ public:
 
         return false;
     }
+
+public:
 
     bool possibleBipartition(int n, vector<vector<int>>& dislikes)
     {
@@ -424,7 +425,6 @@ public:
 
     bool equationsPossible(vector<string>& equations)
     {
-        Graph g;
         vector<int> parent(26);
         int a,b;
 
@@ -436,7 +436,7 @@ public:
             {
                 a = equations[i][0] - 'a';
                 b = equations[i][3] - 'a';
-                parent = g.doUnion(a,b,parent);
+                parent = doUnion(a,b,parent);
             }
 
         for(int i=0;i<equations.size();i++)
@@ -445,7 +445,7 @@ public:
                 a = equations[i][0] - 'a';
                 b = equations[i][3] - 'a';
 
-                if(g.doFind(a,parent) == g.doFind(b,parent))
+                if(doFind(a,parent) == doFind(b,parent))
                     return false;
             }
         return true;
@@ -484,8 +484,6 @@ public:
         memset(distances, 0, sizeof(distances));
         vector<vector<int>> connect(n + 1);
         queue<int> coada;
-
-
 
 
         for(int i=0;i<graph.size();i++)
@@ -551,7 +549,7 @@ public:
 
     }
 
-    int padure(int n,int m, int pl,int pc, int cl, int cc,vector<vector<int>>& graph)
+    int padure(int n, int m, int pl, int pc, int cl, int cc,vector<vector<int>>& graph)
     {
 
         vector<vector<int>> cost(n, vector<int>(m,32000));
