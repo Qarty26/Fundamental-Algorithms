@@ -66,6 +66,7 @@ int p2(int start,int n)
             {
                 cout<<"making node "<<connections[current_node][i].first<<" better"<<endl;
                 cout<<distance[connections[current_node][i].first]<<" "<<actual_distance<<" "<<connections[current_node][i].second<<endl;
+                
                 distance[connections[current_node][i].first] = actual_distance + connections[current_node][i].second;
                 cout<<"updated result: "<<distance[connections[current_node][i].first]<<endl;
                 que.push({connections[current_node][i].first,{actual_distance + connections[current_node][i].second,which_dragon}});
