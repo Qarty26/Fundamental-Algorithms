@@ -47,14 +47,19 @@ int p1(int start)
 int p2(int start,int n)
 {
     vector<int> distMax(n+1,0);
-    queue<pair<int,pair<int,int>>> que; //pair<current_node,pair<actual_distance, which_dragon>>
-    que.push({start,{0,dmax[start]}});
+    priority_queue <
+            std::pair <int, std::pair <int, int>>,
+            std::vector <std::pair <int, std::pair <int, int>>>,
+            std::greater <std::pair <int, std::pair <int, int>>>
+    > que;
+    
+    que.push({0,{start,dmax[start]}});
 
     while(!que.empty())
     {
-        int current_node = que.front().first;
-        int actual_distance = que.front().second.first;
-        int which_dragon = que.front().second.second;
+        int actual_distance = que.top().first;
+        int current_node = que.top().second.first;
+        int which_dragon = que.top().second.second;
         //cout<<"current node = "<<current_node<<endl;
         que.pop();
 
@@ -70,7 +75,7 @@ int p2(int start,int n)
             int nextDragon = max(which_dragon,dmax[connections[current_node][i].first]);
             if(connections[current_node][i].second <= which_dragon && distMax[connections[current_node][i].first] < nextDragon)
             {
-                que.push({connections[current_node][i].first,{actual_distance + connections[current_node][i].second,nextDragon}});
+                que.push({actual_distance + connections[current_node][i].second,{connections[current_node][i].first,nextDragon}});
             }
         }
 
