@@ -46,35 +46,35 @@ int p1(int start)
 
 int p2(int start,int n)
 {
-    vector<int> distance(n,1e9);
+    vector<int> distMax(n+1,0);
     queue<pair<int,pair<int,int>>> que; //pair<current_node,pair<actual_distance, which_dragon>>
     que.push({start,{0,dmax[start]}});
-    distance[start] = 0;
 
     while(!que.empty())
     {
         int current_node = que.front().first;
         int actual_distance = que.front().second.first;
-        int which_dragon = max(que.front().second.second,dmax[current_node]);
-        cout<<"head is"<<current_node<<endl;
+        int which_dragon = que.front().second.second;
+        //cout<<"current node = "<<current_node<<endl;
         que.pop();
+
+        if(which_dragon < distMax[current_node])
+            continue;
+
+        distMax[current_node] = which_dragon;
+        if(current_node == n)
+            return actual_distance;
 
         for(int i=0;i<connections[current_node].size();i++)
         {
-            if(connections[current_node][i].second <= which_dragon &&
-            distance[connections[current_node][i].first] > actual_distance + connections[current_node][i].second)
+            int nextDragon = max(which_dragon,dmax[connections[current_node][i].first]);
+            if(connections[current_node][i].second <= which_dragon && distMax[connections[current_node][i].first] < nextDragon)
             {
-                cout<<"making node "<<connections[current_node][i].first<<" better"<<endl;
-                cout<<distance[connections[current_node][i].first]<<" "<<actual_distance<<" "<<connections[current_node][i].second<<endl;
-                
-                distance[connections[current_node][i].first] = actual_distance + connections[current_node][i].second;
-                cout<<"updated result: "<<distance[connections[current_node][i].first]<<endl;
-                que.push({connections[current_node][i].first,{actual_distance + connections[current_node][i].second,which_dragon}});
+                que.push({connections[current_node][i].first,{actual_distance + connections[current_node][i].second,nextDragon}});
             }
         }
+
     }
-
-
 }
 
 int main()
@@ -95,7 +95,7 @@ int main()
 
     if(p==1)
         out<<p1(1);
-    //else
+    else
         out<<p2(1,n);
 
 
