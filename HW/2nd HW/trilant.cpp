@@ -8,7 +8,7 @@ ifstream in("trilant.in");
 ofstream out("trilant.out");
 
 vector<vector<pair<int,long long>>> connections;
-// TODO: SO SUGI RAZVANE
+
 
 void findPath(int node,int endNode, vector<pair<long long,int>>& parent)
 {
