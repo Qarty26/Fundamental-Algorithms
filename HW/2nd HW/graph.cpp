@@ -11,19 +11,27 @@
 
 using namespace std;
 
+struct edge
+{
+    int startNode,endNode,cost;
+    bool operator<(const edge& a) const
+    {
+        return this->cost < a.cost;
+    }
+};
+
 class Graph
 {
     vector<vector<pair<int,long long>>> connectionsWithCost;
     int size;
     int noEdges;
+    vector<pair<int,int>> coordinates;
 
     struct CompareSecond {
         bool operator()(const pair<int, long long>& left, const pair<int, long long>& right) const {
             return left.second > right.second;
         }
     };
-
-
 
 public:
 
@@ -47,6 +55,12 @@ public:
         }
 
 
+    }
+
+    Graph(int size, vector<pair<int,int>> coordinates)
+    {
+        this->size = size;
+        this->coordinates = coordinates;
     }
 
     vector<pair<long long, int>> dijk(int start)
@@ -151,10 +165,63 @@ public:
 
         return toRaiseCumulative;
     }
+
+    int mstWithCoord()
+    {
+        double totalCost=0.0;
+        int nextNode;
+
+        vector<int> visited(size+1,0);
+        vector<double> minDist(size+1,30000* sqrt(2));
+
+        minDist[0]=0.0;
+        for(int i=1;i<size;i++)
+            minDist[i] = sqrt(pow(coordinates[i].first - coordinates[0].first,2) + pow(coordinates[i].second - coordinates[0].second,2));
+        visited[0]=1;
+
+
+        for(int contor=1;contor<size;contor++) //in each loop we add a node do MST, we already have the node 0
+        {
+            nextNode=contor;
+            double shortestEdge= 30000 * sqrt(2); //diagonal of the grid with max_length = 30000
+
+            //minimum distance from any node in Mst to any unvisited node
+            for(int node=1; node<=size; node++)
+            {
+                if(visited[node] == 0 && minDist[node] < shortestEdge)
+                {
+                    shortestEdge = minDist[node];
+                    nextNode = node;
+                }
+            }
+
+            //adding to the total and marking the added node
+            totalCost+=shortestEdge;
+            visited[nextNode]=1;
+
+            //updating the minimum distance from the new node to any unvisited node
+            for(int node=1;node<size;node++)
+            {
+                if(visited[node] == 0)
+                {
+                    double tempDist = sqrt(pow(coordinates[node].first - coordinates[nextNode].first,2)
+                                           + pow(coordinates[node].second - coordinates[nextNode].second,2));
+
+                    if(tempDist < minDist[node])
+                        minDist[node] = tempDist;
+                }
+            }
+
+        }
+
+        return totalCost;
+    }
 };
 
 class Solution
 {
+    vector<int> parent;
+
     void findPath(int node,int endNode, vector<pair<long long,int>>& parent,ofstream &out)
     {
         vector<int> result;
@@ -169,6 +236,94 @@ class Solution
         for(int i=0;i<result.size();i++)
             out<<result[i]<<" ";
         out<<endl;
+    }
+
+    int dragoni1(int start,vector<vector<pair<int,int>>>& connections,int dmax[])
+    {
+        queue<int> que;
+        bool visited[connections.size()+1];
+        for(int i=1;i<=connections.size();i++)
+            visited[i] = false;
+
+        int maxx = dmax[1];
+        que.push(start);
+
+        while(!que.empty())
+        {
+            int head = que.front();
+            //cout<<"Head is "<<head<<endl;
+            que.pop();
+            visited[head] = true;
+            for(int i=0;i<connections[head].size();i++)
+                if(!visited[connections[head][i].first] && connections[head][i].second <= dmax[1])
+                {
+                    //cout<<"connected with"<<connections[head][i].first<<endl;
+                    que.push(connections[head][i].first);
+                }
+
+
+            if(dmax[head] > maxx)
+            {
+                //cout<<"new max at"<<head;
+                maxx = dmax[head];
+            }
+
+        }
+
+        return maxx;
+    }
+
+    int dragoni2(int start,int n,vector<vector<pair<int,int>>>& connections,int dmax[])
+    {
+        vector<int> distMax(n+1,0);
+        priority_queue <
+                std::pair <int, std::pair <int, int>>,
+                std::vector <std::pair <int, std::pair <int, int>>>,
+                std::greater <std::pair <int, std::pair <int, int>>>
+        > que;
+
+        que.push({0,{start,dmax[start]}});
+
+        while(!que.empty())
+        {
+            int actual_distance = que.top().first;
+            int current_node = que.top().second.first;
+            int which_dragon = que.top().second.second;
+            //cout<<"current node = "<<current_node<<endl;
+            que.pop();
+
+            if(which_dragon < distMax[current_node])
+                continue;
+
+            distMax[current_node] = which_dragon;
+            if(current_node == n)
+                return actual_distance;
+
+            for(int i=0;i<connections[current_node].size();i++)
+            {
+                int nextDragon = max(which_dragon,dmax[connections[current_node][i].first]);
+                if(connections[current_node][i].second <= which_dragon && distMax[connections[current_node][i].first] < nextDragon)
+                {
+                    que.push({actual_distance + connections[current_node][i].second,{connections[current_node][i].first,nextDragon}});
+                }
+            }
+
+        }
+    }
+
+    int findParent(int x)
+    {
+        if(parent[x]!=x)
+            parent[x] = findParent(parent[x]);
+        return parent[x];
+    }
+
+    void unionParents(int a, int b)
+    {
+        int ua = findParent(a);
+        int ub = findParent(b);
+
+        parent[ua] = ub;
     }
 public:
 
@@ -249,6 +404,100 @@ public:
         in.close();
         out.close();
     }
+
+    void cablaj()
+    {
+        ifstream in("cablaj.in");
+        ofstream out("cablaj.out");
+
+        int n;
+
+        in>>n;
+
+        vector<pair<int, int>> coordinates(n+1);
+
+        for(int i=0;i<n;i++)
+            in>>coordinates[i].first>>coordinates[i].second;
+
+
+
+
+        Graph g(n,coordinates);
+        out<<fixed<<setprecision(4)<<g.mstWithCoord();
+
+        in.close();
+        out.close();
+    }
+
+    void dragoni()
+    {
+        ifstream in("dragoni.in");
+        ofstream out("dragoni.out");
+
+        int p,n,m,a,b,d;
+        in>>p>>n>>m;
+
+        int dmax[1000];
+        vector<vector<pair<int,int>>> connections;
+        connections.resize(n+1);
+        for(int i=1;i<=n;i++)
+            in>>dmax[i];
+
+        for(int i=1;i<=m;i++)
+        {
+            in>>a>>b>>d;
+            connections[a].push_back({b,d});
+            connections[b].push_back({a,d});
+        }
+
+        if(p==1)
+            out<<dragoni1(1,connections,dmax);
+        else
+            out<<dragoni2(1,n,connections,dmax);
+    }
+
+    void rusuoaica()
+    {
+        ifstream in("rusuoaica.in");
+        ofstream out("rusuoaica.out");
+
+        int n,M,a,x,y,costEdge;
+        int totalCost = 0;
+        vector<edge> edges;
+        in>>n>>M>>a;
+
+        for(int i=0;i<M;i++)
+        {
+            in>>x>>y>>costEdge;
+            if(costEdge>a)
+                totalCost-=costEdge;
+            else
+                edges.push_back({x,y,costEdge});
+        }
+
+        sort(edges.begin(), edges.end());
+
+        for(int i=0;i<=n;i++)
+            parent.push_back(i);
+
+        int used=0;
+        for(int i=0;i<edges.size();i++)
+            if(findParent(edges[i].startNode) != findParent(edges[i].endNode))
+            {
+                totalCost+=edges[i].cost;
+                used+=1;
+                unionParents(edges[i].startNode,edges[i].endNode);
+            }
+            else
+                totalCost-=edges[i].cost;
+
+        totalCost += a*(n-used-1);
+
+        out<<totalCost;
+
+        in.close();
+        out.close();
+    }
 };
 
 int main() {
@@ -259,6 +508,8 @@ int main() {
     cout<<s.findCheapestPrice(4,flights,0,3,1); done*/
     //s.trilant();  done
     //s.camionas(); done
-
+    //s.cablaj(); done
+    //s.dragoni(); done
+    //s.rusuoaica(); done
     return 0;
 }
