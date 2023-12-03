@@ -24,13 +24,18 @@ class DSU
 {
     int size;
     vector<int> parent;
+    vector<int> sizeComponent;
+
 public:
 
     DSU(int size)
     {
         this-> size = size;
         for(int i=0;i<=size;i++)
+        {
             parent.push_back(i);
+            sizeComponent.push_back(1);
+        }
     }
 
     int findParent(int x)
@@ -46,6 +51,23 @@ public:
         int ub = findParent(b);
 
         parent[ua] = ub;
+    }
+
+    void unionWithSize(int node1, int node2)
+    {
+        node1 = findParent(node1);
+        node2 = findParent(node2);
+
+        if (node1 == node2)
+            return;
+
+        sizeComponent[node1] += sizeComponent[node2];
+        parent[node2] = node1;
+    }
+
+    int getSizeComponent(int index) const
+    {
+        return this->sizeComponent[index];
     }
 };
 
@@ -339,7 +361,13 @@ class Solution
         }
     }
 
-
+    bool inMatrix(int n, pair<int,int> coord, pair<int,int> directions)
+    {
+        if(0 <= coord.first + directions.first && coord.first + directions.first < n &&
+           0 <= coord.second + directions.second && coord.second + directions.second < n)
+            return true;
+        return false;
+    }
 public:
 
     void trilant()
@@ -512,6 +540,89 @@ public:
         in.close();
         out.close();
     }
+
+    void oracol()
+    {
+        ifstream in("oracol.in");
+        ofstream out("oracol.out");
+
+        vector<edge> edges;
+
+        int n,price;
+        in>>n;
+        for(int i=0;i<n;i++)
+            for(int j=i;j<n;j++)
+            {
+                in>>price;
+                edges.push_back({i,j+1,price});
+            }
+
+        sort(edges.begin(), edges.end());
+
+        DSU dsu(n);
+
+        int totalCost = 0;
+        for(int i=0;i<edges.size();i++)
+            if(dsu.findParent(edges[i].startNode) != dsu.findParent(edges[i].endNode))
+            {
+                totalCost+=edges[i].cost;
+                dsu.unionParents(edges[i].startNode,edges[i].endNode);
+            }
+
+        out<<totalCost;
+
+        in.close();
+        out.close();
+    }
+
+    void bile()
+    {
+        ifstream in("bile.in");
+        ofstream out("bile.out");
+
+        int n;
+        int maxim = 1;
+        in>>n;
+
+        bool checked[1000][1000];
+        vector<int> result;
+        vector<pair<int,int>> coordBila(n*n+1);
+        vector<pair<int,int>> directions {{0,1},{0,-1},{1,0},{-1,0}};
+        for(int i=0;i<n*n;i++)
+        {
+            in>>coordBila[i].first>>coordBila[i].second;
+            coordBila[i].first--;
+            coordBila[i].second--;
+        }
+
+        DSU dsu(n*n);
+
+        result.push_back(0);
+        for(int i=n*n-1;i>=0;i--)
+        {
+            int x = coordBila[i].first;
+            int y = coordBila[i].second;
+            for(int j=0;j<4;j++) {
+
+                if (inMatrix(n, coordBila[i], directions[j]) &&
+                    checked[x + directions[j].first][y + directions[j].second]) {
+                    int line = x + directions[j].first;
+                    int column = y + directions[j].second;
+
+                    dsu.unionWithSize(x * n + y,line * n + column );
+                }
+            }
+            checked[coordBila[i].first][coordBila[i].second] = true;
+            maxim = max(maxim,dsu.getSizeComponent(x*n+y));
+            result.push_back(maxim);
+        }
+
+        for(int i=result.size()-2;i>=0;i--)
+            out<<result[i]<<endl;
+
+        in.close();
+        out.close();
+    }
 };
 
 int main() {
@@ -525,5 +636,8 @@ int main() {
     //s.cablaj(); done
     //s.dragoni(); done
     //s.rusuoaica(); done
+    //s.oracol(); done
+    //s.bile(); done
+    
     return 0;
 }
