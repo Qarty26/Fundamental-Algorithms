@@ -20,6 +20,35 @@ struct edge
     }
 };
 
+class DSU
+{
+    int size;
+    vector<int> parent;
+public:
+
+    DSU(int size)
+    {
+        this-> size = size;
+        for(int i=0;i<=size;i++)
+            parent.push_back(i);
+    }
+
+    int findParent(int x)
+    {
+        if(parent[x]!=x)
+            parent[x] = findParent(parent[x]);
+        return parent[x];
+    }
+
+    void unionParents(int a, int b)
+    {
+        int ua = findParent(a);
+        int ub = findParent(b);
+
+        parent[ua] = ub;
+    }
+};
+
 class Graph
 {
     vector<vector<pair<int,long long>>> connectionsWithCost;
@@ -220,7 +249,6 @@ public:
 
 class Solution
 {
-    vector<int> parent;
 
     void findPath(int node,int endNode, vector<pair<long long,int>>& parent,ofstream &out)
     {
@@ -311,20 +339,7 @@ class Solution
         }
     }
 
-    int findParent(int x)
-    {
-        if(parent[x]!=x)
-            parent[x] = findParent(parent[x]);
-        return parent[x];
-    }
 
-    void unionParents(int a, int b)
-    {
-        int ua = findParent(a);
-        int ub = findParent(b);
-
-        parent[ua] = ub;
-    }
 public:
 
     void trilant()
@@ -477,16 +492,15 @@ public:
 
         sort(edges.begin(), edges.end());
 
-        for(int i=0;i<=n;i++)
-            parent.push_back(i);
+        DSU dsu(n);
 
         int used=0;
         for(int i=0;i<edges.size();i++)
-            if(findParent(edges[i].startNode) != findParent(edges[i].endNode))
+            if(dsu.findParent(edges[i].startNode) != dsu.findParent(edges[i].endNode))
             {
                 totalCost+=edges[i].cost;
                 used+=1;
-                unionParents(edges[i].startNode,edges[i].endNode);
+                dsu.unionParents(edges[i].startNode,edges[i].endNode);
             }
             else
                 totalCost-=edges[i].cost;
