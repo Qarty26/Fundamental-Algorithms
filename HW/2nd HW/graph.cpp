@@ -14,20 +14,21 @@ using namespace std;
 struct edge
 {
     int startNode,endNode,cost;
-    bool operator<(const edge& a) const
+    bool operator<(const edge& a) const //overloaded to be used in sort functions
     {
         return this->cost < a.cost;
     }
 };
 
-class DSU
+class DSU //used for union find methods
 {
-    int size;
-    vector<int> parent;
-    vector<int> sizeComponent;
+    int size; //number of nodes
+    vector<int> parent; //parents of the nodes
+    vector<int> sizeComponent; //the size (number of conected nodes) of a component
 
 public:
 
+//----------------- CONSTRUCTOR --------------
     DSU(int size)
     {
         this-> size = size;
@@ -37,6 +38,7 @@ public:
             sizeComponent.push_back(1);
         }
     }
+//-------------- END CONSTRUCTOR --------------
 
     int findParent(int x)
     {
@@ -45,7 +47,7 @@ public:
         return parent[x];
     }
 
-    void unionParents(int a, int b)
+    void unionParents(int a, int b) //basic union function 
     {
         int ua = findParent(a);
         int ub = findParent(b);
@@ -53,7 +55,7 @@ public:
         parent[ua] = ub;
     }
 
-    void unionWithSize(int node1, int node2)
+    void unionWithSize(int node1, int node2) //union function with component size
     {
         node1 = findParent(node1);
         node2 = findParent(node2);
@@ -64,28 +66,33 @@ public:
         sizeComponent[node1] += sizeComponent[node2];
         parent[node2] = node1;
     }
-
+//-------------------GETTERS---------------------
     int getSizeComponent(int index) const
     {
         return this->sizeComponent[index];
     }
 };
+//-------------- END GETTERS -----------------
 
 class Graph
 {
-    vector<vector<pair<int,long long>>> connectionsWithCost;
-    int size;
-    int noEdges;
-    vector<pair<int,int>> coordinates;
+    vector<vector<pair<int,long long>>> connectionsWithCost; //adjacency list with nodes and costs
+//requires long long for costs
 
-    struct CompareSecond {
+    int size; //numbers of nodes
+    int noEdges; //number of edges
+    vector<pair<int,int>> coordinates; //nodes given by coordinates
+
+//Compare function for the second element of a pair
+    struct CompareSecond 
+    {
         bool operator()(const pair<int, long long>& left, const pair<int, long long>& right) const {
             return left.second > right.second;
         }
     };
 
 public:
-
+//------------ CONSTRUCTORS ----------------
     Graph(int size, int noEdges, vector<vector<pair<int,long long>>>& connections)
     {
         this->size = size;
@@ -113,6 +120,12 @@ public:
         this->size = size;
         this->coordinates = coordinates;
     }
+//-------------- END CONSTRUCTORS --------------
+
+
+// dijkstra algorithm from a given node
+// parameter: int, representing start node
+// output: vector of pairs -> list of the minimum distance from start node to any node and the parent of each node
 
     vector<pair<long long, int>> dijk(int start)
     {
@@ -151,6 +164,9 @@ public:
         return distancesAndParent;
 
     }
+// dijkstra algorithm using maximum k nodes
+// parameters: ints: source, destination, number of stops
+// output: the cost from source to destination using maximum k stops
 
     int shortestPathWithinKStops (int src, int dst, int k)
     {
@@ -186,6 +202,10 @@ public:
 
     }
 
+// dijkstra algorithm using a deque
+// parameter: int, the maximum cost for an edge
+// output: vector of int,number of edges with a cost higher than the parameter that had to be taken
+
     vector<int> BfsZeroOne(int maxCost)
     {
         deque<int> deq;
@@ -216,6 +236,11 @@ public:
 
         return toRaiseCumulative;
     }
+
+
+// prim's algorithm with coordinates
+// parameter: no parameters required 
+// output: minimum cost for spanning tree
 
     int mstWithCoord()
     {
@@ -305,18 +330,12 @@ class Solution
             que.pop();
             visited[head] = true;
             for(int i=0;i<connections[head].size();i++)
-                if(!visited[connections[head][i].first] && connections[head][i].second <= dmax[1])
-                {
-                    //cout<<"connected with"<<connections[head][i].first<<endl;
-                    que.push(connections[head][i].first);
-                }
-
+                if(!visited[connections[head][i].first] && connections[head][i].second <= dmax[head]) que.push(connections[head][i].first);
+                
 
             if(dmax[head] > maxx)
-            {
-                //cout<<"new max at"<<head;
                 maxx = dmax[head];
-            }
+            
 
         }
 
@@ -360,6 +379,13 @@ class Solution
 
         }
     }
+
+//function that checks if a neighbor of a node is still in the matrix
+// parameter:
+//int: size of the matrix
+//pair of ints: coordinates of the node
+//pair of ints: changes of x and y
+// output: bool
 
     bool inMatrix(int n, pair<int,int> coord, pair<int,int> directions)
     {
