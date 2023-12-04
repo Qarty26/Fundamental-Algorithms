@@ -119,7 +119,7 @@ public:
         priority_queue <pair <int,long long>,
                 vector<pair <int,long long>>,
                 CompareSecond
-        > que;
+                > que;
         vector<pair<long long, int>> distancesAndParent(connectionsWithCost.size(),{LLONG_MAX, -1});
         vector<bool> visited(connectionsWithCost.size(),false);
 
@@ -199,7 +199,7 @@ public:
             deq.pop_front();
 
             for(int i=0;i<connectionsWithCost[head].size();i++)
-                if(toRaiseCumulative[connectionsWithCost[head][i].first] - connectionsWithCost[head][i].second  > toRaiseCumulative[head])
+                if(toRaiseCumulative[connectionsWithCost[head][i].first] > toRaiseCumulative[head])
                 {
                     if(connectionsWithCost[head][i].second >= maxCost)
                     {
@@ -217,7 +217,7 @@ public:
         return toRaiseCumulative;
     }
 
-    int mstWithCoord()
+    double mstWithCoord()
     {
         double totalCost=0.0;
         int nextNode;
@@ -332,9 +332,9 @@ class Solution
     {
         vector<int> distMax(n+1,0);
         priority_queue <
-                std::pair <int, std::pair <int, int>>,
+        std::pair <int, std::pair <int, int>>,
                 std::vector <std::pair <int, std::pair <int, int>>>,
-                std::greater <std::pair <int, std::pair <int, int>>>
+        std::greater <std::pair <int, std::pair <int, int>>>
         > que;
 
         que.push({0,{start,dmax[start]}});
@@ -434,20 +434,24 @@ public:
     {
         ifstream in("camionas.in");
         ofstream out("camionas.out");
-        int n,m,g,x,y,w;
+        int n,m,x,y,w,g;
 
         in>>n>>m>>g;
+
         vector<vector<pair<int,long long>>> edges(n+1);
+
 
         for(int i=0;i<m;i++)
         {
+
             in>>x>>y>>w;
             edges[x].push_back({y,w});
             edges[y].push_back({x,w});
         }
 
         Graph graph(n,m,edges);
-         out<<graph.BfsZeroOne(g)[n];
+
+        out<<graph.BfsZeroOne(g)[n];
 
 
         in.close();
@@ -472,7 +476,7 @@ public:
 
 
         Graph g(n,coordinates);
-        out<<fixed<<setprecision(4)<<g.mstWithCoord();
+        out<<fixed<<g.mstWithCoord()<<setprecision(4);
 
         in.close();
         out.close();
@@ -503,6 +507,9 @@ public:
             out<<dragoni1(1,connections,dmax);
         else
             out<<dragoni2(1,n,connections,dmax);
+
+        in.close();
+        out.close();
     }
 
     void rusuoaica()
@@ -601,7 +608,7 @@ public:
             coordBila[i].second--;
         }
 
-        DSU dsu(n*n);
+        DSU dsu(n*n-1);
 
         result.push_back(0);
         for(int i=n*n-1;i>=0;i--)
@@ -683,6 +690,7 @@ int main() {
 //    vector<vector<int>> queries = {{0,4,14},{1,4,13}};
 //
 //    s.distanceLimitedPathsExist(5,EdgeList,queries);
-    
+
+
     return 0;
 }
