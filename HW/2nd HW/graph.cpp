@@ -330,7 +330,7 @@ class Solution
             que.pop();
             visited[head] = true;
             for(int i=0;i<connections[head].size();i++)
-                if(!visited[connections[head][i].first] && connections[head][i].second <= dmax[head]) que.push(connections[head][i].first);
+                if(!visited[connections[head][i].first] && connections[head][i].second <= dmax[1]) que.push(connections[head][i].first);
                 
 
             if(dmax[head] > maxx)
