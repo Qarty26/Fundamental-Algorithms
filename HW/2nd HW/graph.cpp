@@ -296,6 +296,12 @@ public:
 
 class Solution
 {
+//function that returns in file the path between the given nodes
+// parameters:
+// int: starting node and ending node
+// vector of pairs(distance, parents)
+// print in file function
+// output: in file, the requested path
 
     void findPath(int node,int endNode, vector<pair<long long,int>>& parent,ofstream &out)
     {
@@ -312,6 +318,8 @@ class Solution
             out<<result[i]<<" ";
         out<<endl;
     }
+//first quest from "dragoni"
+//bfs search
 
     int dragoni1(int start,vector<vector<pair<int,int>>>& connections,int dmax[])
     {
@@ -326,21 +334,20 @@ class Solution
         while(!que.empty())
         {
             int head = que.front();
-            //cout<<"Head is "<<head<<endl;
             que.pop();
             visited[head] = true;
             for(int i=0;i<connections[head].size();i++)
                 if(!visited[connections[head][i].first] && connections[head][i].second <= dmax[1]) que.push(connections[head][i].first);
                 
-
             if(dmax[head] > maxx)
-                maxx = dmax[head];
-            
-
+                maxx = dmax[head];           
         }
 
         return maxx;
     }
+
+//second quest from "dragoni"
+//dijkstra algorithm
 
     int dragoni2(int start,int n,vector<vector<pair<int,int>>>& connections,int dmax[])
     {
