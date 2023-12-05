@@ -14,20 +14,21 @@ using namespace std;
 struct edge
 {
     int startNode,endNode,cost;
-    bool operator<(const edge& a) const
+    bool operator<(const edge& a) const //overloaded to be used in sort functions
     {
         return this->cost < a.cost;
     }
 };
 
-class DSU
+class DSU //used for union find methods
 {
-    int size;
-    vector<int> parent;
-    vector<int> sizeComponent;
+    int size; //number of nodes
+    vector<int> parent; //parents of the nodes
+    vector<int> sizeComponent; //the size (number of connected nodes) of a component
 
 public:
 
+    //----------------- CONSTRUCTOR --------------
     DSU(int size)
     {
         this-> size = size;
@@ -37,7 +38,7 @@ public:
             sizeComponent.push_back(1);
         }
     }
-
+//-------------- END CONSTRUCTOR --------------
     int findParent(int x)
     {
         if(parent[x]!=x)
@@ -45,7 +46,7 @@ public:
         return parent[x];
     }
 
-    void unionParents(int a, int b)
+    void unionParents(int a, int b) //basic union function
     {
         int ua = findParent(a);
         int ub = findParent(b);
@@ -53,7 +54,7 @@ public:
         parent[ua] = ub;
     }
 
-    void unionWithSize(int node1, int node2)
+    void unionWithSize(int node1, int node2) //union function with component size
     {
         node1 = findParent(node1);
         node2 = findParent(node2);
@@ -65,19 +66,22 @@ public:
         parent[node2] = node1;
     }
 
+    //-------------------GETTERS---------------------
     int getSizeComponent(int index) const
     {
         return this->sizeComponent[index];
     }
+    //-------------- END GETTERS -----------------
 };
 
 class Graph
 {
-    vector<vector<pair<int,long long>>> connectionsWithCost;
-    int size;
-    int noEdges;
-    vector<pair<int,int>> coordinates;
+    vector<vector<pair<int,long long>>> connectionsWithCost; //adjacency list with nodes and costs requires long long for costs
+    int size;  //numbers of nodes
+    int noEdges; //number of edges
+    vector<pair<int,int>> coordinates; //nodes given by coordinates
 
+    //Compare function for the second element of a pair
     struct CompareSecond {
         bool operator()(const pair<int, long long>& left, const pair<int, long long>& right) const {
             return left.second > right.second;
@@ -86,6 +90,7 @@ class Graph
 
 public:
 
+    //------------ CONSTRUCTORS ----------------
     Graph(int size, int noEdges, vector<vector<pair<int,long long>>>& connections)
     {
         this->size = size;
@@ -113,13 +118,20 @@ public:
         this->size = size;
         this->coordinates = coordinates;
     }
+    //-------------- END CONSTRUCTORS --------------
 
+
+
+// dijkstra algorithm from a given node
+// parameter: int, representing start node
+// output: vector of pairs -> list of the minimum distance from start node to any node and the parent of each node
     vector<pair<long long, int>> dijk(int start)
     {
         priority_queue <pair <int,long long>,
                 vector<pair <int,long long>>,
                 CompareSecond
                 > que;
+        //.first = distance,    .second = parent
         vector<pair<long long, int>> distancesAndParent(connectionsWithCost.size(),{LLONG_MAX, -1});
         vector<bool> visited(connectionsWithCost.size(),false);
 
@@ -152,6 +164,10 @@ public:
 
     }
 
+    // dijkstra algorithm using maximum k nodes
+// parameters: ints: source, destination, number of stops
+// output: the cost from source to destination using maximum k stops
+
     int shortestPathWithinKStops (int src, int dst, int k)
     {
         queue<pair<int,pair<int,int>>> que;
@@ -166,7 +182,8 @@ public:
             int cost = head.second.second;
             que.pop();
 
-            if(stops <= k)
+
+            if(stops <= k) //if we are still below limit
             {
                 for(int i=0;i<connectionsWithCost[destination].size();i++)
                     if(cost + connectionsWithCost[destination][i].second < costs[connectionsWithCost[destination][i].first])
@@ -185,6 +202,10 @@ public:
         return costs[dst];
 
     }
+
+    // dijkstra algorithm using a deque
+    // parameter: int, the maximum cost for an edge
+    // output: vector of int,number of edges with a cost higher than the parameter that had to be taken
 
     vector<int> BfsZeroOne(int maxCost)
     {
@@ -217,6 +238,10 @@ public:
         return toRaiseCumulative;
     }
 
+    // prim's algorithm with coordinates
+    // parameter: no parameters required
+    // output: minimum cost for spanning tree
+
     double mstWithCoord()
     {
         double totalCost=0.0;
@@ -234,7 +259,7 @@ public:
         for(int contor=1;contor<size;contor++) //in each loop we add a node do MST, we already have the node 0
         {
             nextNode=contor;
-            double shortestEdge= 30000 * sqrt(2); //diagonal of the grid with max_length = 30000
+            double shortestEdge = 30000 * sqrt(2); //diagonal of the grid with max_length = 30000
 
             //minimum distance from any node in Mst to any unvisited node
             for(int node=1; node<=size; node++)
@@ -272,6 +297,7 @@ public:
 class Solution
 {
 
+    //compare function for third element in a vector
     static bool compareDistance(const vector<int>& vect1, const vector<int>& vect2)
     {
         return vect1[2] < vect2[2];
@@ -330,7 +356,7 @@ class Solution
 
     int dragoni2(int start,int n,vector<vector<pair<int,int>>>& connections,int dmax[])
     {
-        vector<int> distMax(n+1,0);
+        vector<int> dragMax(n+1,0);
         priority_queue <
         std::pair <int, std::pair <int, int>>,
                 std::vector <std::pair <int, std::pair <int, int>>>,
@@ -347,17 +373,17 @@ class Solution
             //cout<<"current node = "<<current_node<<endl;
             que.pop();
 
-            if(which_dragon < distMax[current_node])
+            if(which_dragon < dragMax[current_node])
                 continue;
 
-            distMax[current_node] = which_dragon;
+            dragMax[current_node] = which_dragon;
             if(current_node == n)
                 return actual_distance;
 
             for(int i=0;i<connections[current_node].size();i++)
             {
                 int nextDragon = max(which_dragon,dmax[connections[current_node][i].first]);
-                if(connections[current_node][i].second <= which_dragon && distMax[connections[current_node][i].first] < nextDragon)
+                if(connections[current_node][i].second <= which_dragon && dragMax[connections[current_node][i].first] < nextDragon)
                 {
                     que.push({actual_distance + connections[current_node][i].second,{connections[current_node][i].first,nextDragon}});
                 }
@@ -366,6 +392,13 @@ class Solution
         }
         return 0;
     }
+
+    //function that checks if a neighbor of a node is still in the matrix
+    // parameter:
+    //int: size of the matrix
+    //pair of ints: coordinates of the node
+    //pair of ints: changes of x and y
+    // output: bool
 
     bool inMatrix(int n, pair<int,int> coord, pair<int,int> directions)
     {
@@ -395,6 +428,7 @@ public:
 
 
         Graph g(n,m,connections);
+        //calculating the distance from the given nodes to any other node
         vector<pair<long long,int>> costsAndPathFromA;
         vector<pair<long long,int>> costsAndPathFromB;
         vector<pair<long long, int>> costsAndPathFromC;
@@ -406,6 +440,7 @@ public:
 
         long long minDist = LLONG_MAX;
         int nodeX = -1;
+        //finding the closest node to all of the given nodes
         for(int i=1;i<=n;i++)
         {
             if(costsAndPathFromA[i].first + costsAndPathFromB[i].first + costsAndPathFromC[i].first < minDist)
@@ -415,6 +450,7 @@ public:
             }
         }
         out<<minDist<<endl;
+        //distance from the given nodes to the closest node
         findPath(nodeX,a,costsAndPathFromA,out);
         findPath(nodeX,b,costsAndPathFromB,out);
         findPath(nodeX,c,costsAndPathFromC,out);
@@ -581,6 +617,7 @@ public:
                 totalCost+=edges[i].cost;
                 dsu.unionParents(edges[i].startNode,edges[i].endNode);
             }
+
 
         out<<totalCost;
 
