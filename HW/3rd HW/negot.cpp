@@ -10,7 +10,7 @@ class MaxFlow
     int n;
     vector<vector<int>> capacity;
     vector<vector<int>> adj;
-    unordered_map<int, unordered_map<int, int>> flow;
+    vector<vector<int>> flow;
 
 public:
 
