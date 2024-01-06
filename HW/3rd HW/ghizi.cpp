@@ -3,6 +3,7 @@
 #include <queue>
 #include <fstream>
 #include <algorithm>
+#include <climits>
 using namespace std;
 
 class MaxFlow
@@ -42,11 +43,24 @@ public:
         }
     }
 
+
+    void printFlow()
+    {
+        for(int i=0; i<flow.size(); i++)
+        {
+
+            cout<<i<<": ";
+            for(int j=0;j<flow[i].size();j++)
+                cout<<flow[i][j]<<" ";
+            cout<<endl;
+        }
+    }
+
     int bfs(int s, int t, vector<int>& parent) {
         fill(parent.begin(), parent.end(), -1);
         parent[s] = -2;
         queue<pair<int, int>> q;
-        q.push({s, 1e9});
+        q.push({s, INT_MAX});
 
         while (!q.empty()) {
             int cur = q.front().first;
@@ -57,9 +71,10 @@ public:
                 if (parent[next] == -1 && capacity[cur][next] > flow[cur][next]) {
                     parent[next] = cur;
                     int new_flow = min(flw, this->capacity[cur][next] - this->flow[cur][next]);
+                    q.push({next, new_flow});
                     if (next == t)
                         return new_flow;
-                    q.push({next, new_flow});
+
                 }
             }
         }
@@ -67,13 +82,22 @@ public:
         return 0;
     }
 
+
+
     int maxflow(int s, int t)
     {
         int flw = 0;
         vector<int> parent(this->capacity.size());
         int newFlow;
 
-        while(newFlow = bfs(s,t,parent)){
+        while(true)
+        {
+
+            newFlow = bfs(0,101,parent);
+
+            if(!newFlow)
+                break;
+
 
             flw += newFlow;
             int current = t;
@@ -120,6 +144,8 @@ public:
         MaxFlow flow(102,capacity,adj);
         flow.maxflow(0,101);
 
+
+
         vector<int> sol;
 
         for(int i=0;i<n;i++){
@@ -133,7 +159,6 @@ public:
         }
         out<<sol.size()<<endl;
 
-        sort(sol.begin(), sol.end());
         for(int i=0;i<sol.size();i++)
         {
             out<<sol[i]<<" ";
