@@ -6,7 +6,7 @@
 #include <climits>
 using namespace std;
 
-class MaxFlow
+class Graph
 {
     int size; //size of the graph
     vector<vector<int>> capacity; //capacity matrix
@@ -34,7 +34,7 @@ public:
     //--capacity matrix(vector<vector<int>>)
     //--adjacency matrix(vector<vector<int>>)
 
-    MaxFlow(int size,vector<vector<int>>&capacity,vector<vector<int>>&adj)
+    Graph(int size,vector<vector<int>>&capacity,vector<vector<int>>&adj)
     {
         this -> size = size;
         this -> capacity = capacity;
@@ -57,23 +57,6 @@ public:
             cout<<i<<": ";
             for(int j=0;j<adj[i].size();j++)
                 cout<<adj[i][j]<<" ";
-            cout<<endl;
-        }
-    }
-
-    //function that prints the matrix of the flow
-
-    //paramenters: none
-
-    //return value: none
-
-    void printFlow()
-    {
-        for(int i=0; i<flow.size(); i++)
-        {
-            cout<<i<<": ";
-            for(int j=0;j<getFlow()[i].size();j++)
-                cout<<getFlow()[i][j]<<" ";
             cout<<endl;
         }
     }
@@ -133,7 +116,7 @@ public:
         //while there's a path on which we can send flow (>0)
         while(true)
         {
-            newFlow = bfs(0,101,parent);
+            newFlow = bfs(s,t,parent);
 
             //if the maximum flow in our current graph is 0, we end the loop
             if(!newFlow)
@@ -163,10 +146,13 @@ public:
         ofstream out("ghizi.out");
 
         int n,k,t1,t2;
+        int start = 0;
+        int finish = 100;
+
         //first 100 nodes: the moments of time
         //last node: sink
-        vector<vector<int>> capacity(102,vector<int>(102,0));
-        vector<vector<int>> adj(102);
+        vector<vector<int>> capacity(finish+2,vector<int>(finish+2,0));
+        vector<vector<int>> adj(finish+2);
         vector<pair<int,int>> volunteers;
 
         in>>n>>k;
@@ -183,15 +169,14 @@ public:
         }
 
         //linking the end node with the sink
-        adj[100].push_back(101);
-        adj[101].push_back(100);
-        capacity[100][101] = k;
+        adj[finish].push_back(finish+1);
+        adj[finish+1].push_back(finish);
+        capacity[finish][finish+1] = k;
 
-        MaxFlow flow(102,capacity,adj);
-        flow.maxflow(0,101);
+        Graph flow(finish+2,capacity,adj);
+        flow.maxflow(start,finish+1);
 
         vector<int> sol;
-
 
         //if we used that volunteer (flow > 0)
         for(int i=0; i<n; i++){
@@ -256,7 +241,7 @@ public:
             }
         }
 
-        MaxFlow flow(n+n+2, capacity, adj);
+        Graph flow(n+n+2, capacity, adj);
         //the result is the maximum flow in the graph and
         out<< flow.maxflow(0, n+n+1)<<endl;
 
@@ -316,7 +301,7 @@ public:
             capacity[i+n][m+n+1] = 1;
         }
 
-        MaxFlow flow(n+m+2, capacity, adj);
+        Graph flow(n+m+2, capacity, adj);
         //the result for the problem is the maximum flow in the graph
         out<< flow.maxflow(0, n+m+1);
 
